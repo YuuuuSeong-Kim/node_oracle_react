@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://unpkg.com/react@^16/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@16.13.0/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6.26.0/babel.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <!-- react에서 ajax를 사용하기 위한 src -->
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        var isInit = false;
+        var selRow;
+
+        class Form extends React.Component {
+            initialState = {
+                BOOKID: "",
+                BOOKNAME: "",
+                PRICE: "",
+                PUBLISHER: ""
+            }
+
+            state = this.initialState;
+
+            handleChange = (event) => {
+                if(!isInit){
+                    const { name, value } = event.target;
+                    this.setState({ [name]: value })
+                }else{
+                    this.setState(selRow)
+                    isInit=false;
+                }
+            }
+
+            submitForm = (event) => {
+                const url = event.target.getAttribute("url");
+                console.log(url)
+                console.log(this.state);
+                let data;
+                if(isInit){
+                    data = selRow;
+                }else{
+                    data = this.state;
+                }
+                console.log(data)
+                const axiosConfig = { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+                axios.post(url, data, axiosConfig);
+                location.reload();
+                return false;
+            }
+
+            render() {
+                const { BOOKID, BOOKNAME, PRICE, PUBLISHER } = this.state
+                return (
+                    <form>
+                        <input type="hidden" name="BOOKID" id="BOOKID" value={BOOKID} onChange={this.handleChange} /><br />
+                        <label htmlFor="BOOKNAME">도서명 : </label>
+                        <input type="text" name="BOOKNAME" id="BOOKNAME" value={BOOKNAME} onChange={this.handleChange} /><br />
+
+                        <label htmlFor="PRICE">가격 : </label>
+                        <input type="number" name="PRICE" id="PRICE" value={PRICE} onChange={this.handleChange} /><br />
+
+                        <label htmlFor="PUBLISHER">출판사 : </label>
+                        <input type="text" name="PUBLISHER" id="PUBLISHER" value={PUBLISHER} onChange={this.handleChange} /><br />
+                        <input type="button" url="/insert" value="등록" onClick={this.submitForm} />&nbsp;
+                        <input type="button" url="/update" value="수정" onClick={this.submitForm} />&nbsp;
+                        <input type="button" url="/delete" value="삭제" onClick={this.submitForm} />
+                    </form>
+                );
+            }
+        }
+
+        const TableHeader = () => {
+            return <thead>
+                <tr>
+                    <th>도서번호</th>
+                    <th>도서명</th>
+                    <th>가격</th>
+                    <th>출판사</th>
+                </tr>
+            </thead>
+        }
+
+        const TableBody = (props) => {
+            const form = new Form;
+            const updateForm = (data) => {
+                document.querySelector("#BOOKID").value=data.BOOKID
+                document.querySelector("#BOOKNAME").value=data.BOOKNAME
+                document.querySelector("#PRICE").value=data.PRICE
+                document.querySelector("#PUBLISHER").value=data.PUBLISHER
+                selRow = data;
+                isInit = true;
+                // form.setState({[Object.keys(data)[0]]:Object.values(data)[0]})
+                // form.setState({[Object.keys(data)[1]]:Object.values(data)[1]})
+                // form.setState({[Object.keys(data)[2]]:Object.values(data)[2]})
+                // form.setState({[Object.keys(data)[3]]:Object.values(data)[3]})
+                // console.log({[Object.keys(data)[0]]:Object.values(data)[0]})
+            }
+
+            const rows = props.listData.map((book, index) => {
+                return <tr key={book.BOOKID} onClick={() => updateForm(book)}>
+                    <td>{book.BOOKID}</td>
+                    <td>{book.BOOKNAME}</td>
+                    <td>{book.PRICE}</td>
+                    <td>{book.PUBLISHER}</td>
+                </tr>
+            });
+            return <tbody>{rows}</tbody>
+        }
+
+        const Table = (props) => {
+            const listData = props.listData;
+            return <table border="1">
+                <TableHeader />
+                <TableBody listData={listData} />
+            </table>
+        }
+
+        //axios를 통해서 ajax 통신 하기
+        //axios.get("서비스명").then(함수)
+        axios.get("/listBook").then((res) => {
+            class App extends React.Component {
+                render() {
+                    const list = res.data.data;
+                    return <div>
+                        <Form />
+                        <hr />
+                        <Table listData={list}></Table>
+                    </div>
+                }//end render
+            }//end class
+            ReactDOM.render(<App />, document.getElementById("root"));
+        });//end axios
+    </script>
+</body>
+
+</html>

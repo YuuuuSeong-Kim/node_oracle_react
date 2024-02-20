@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://unpkg.com/react@^16/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@16.13.0/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6.26.0/babel.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        function Hello(props){
+            return <h1>Hello {props.name}!!</h1>;
+        }
+
+        const member = 
+        <div>
+                <Hello name="홍길동"/>
+                <Hello name="이순신"/>
+                <Hello name="유관순"/>
+        </div>
+        
+        ReactDOM.render(member, document.getElementById("root"));
+    </script>
+</body>
+</html>
