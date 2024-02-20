@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script>
+        $( () =>{
+            let loadBook = () => {
+                $.ajax({
+                    url: "/listBook",
+                    success: (list) =>{
+                        $("#bookid").val(list.nextNO)
+                        var tbody = $("#listBook");
+                        $.each(list.data, function (){
+                            console.log(this)
+                            var tr = $("<tr></tr>").attr("class","col");
+                            tr.append($("<td></td>").html(this.BOOKID).attr("class","bookid"));
+                            tr.append($("<td></td>").html(this.BOOKNAME).attr("class","bookname"));
+                            tr.append($("<td></td>").html(this.PRICE).attr("class","price"));
+                            tr.append($("<td></td>").html(this.PUBLISHER).attr("class","publisher"));
+                            tbody.append(tr);
+                        })
+                    }
+                })
+            }
+            
+            $("#listBook").on("click",".col",function(){
+                $("#bookid").val($(this).children(".bookid").text())
+                $("#bookname").val($(this).children(".bookname").text())
+                $("#price").val($(this).children(".price").text())
+                $("#publisher").val($(this).children(".publisher").text())
+            })
+
+            $("#btnUpdate").click( ()=> {
+                var data = $("form").serializeArray();
+                $.post("/update", data, () =>{
+                    alert("수정완료");
+                    window.location.reload();
+                })
+            })
+            
+            $("#btnDelete").click(()=>{
+                var bookid = {bookid:$("#bookid").val()};
+                var result = confirm("정말 해당 도서를 삭제하시겠습니까?");
+                if(result){
+                    // $.post("/delete", bookid, function () {
+                    // alert("삭제완료");
+                    // window.location.reload();
+                    // })
+                    $.ajax({
+                        url:"/delete",
+                        data:bookid,
+                        type:'post',
+                        success:()=>{
+                            alert("삭제완료");
+                            window.location.reload();
+                        }
+                    })
+                }
+            })
+
+            $("#btnInsert").click( () =>{
+                var data = $("form").serializeArray();
+                $.post("/insert", data, () =>{
+                    alert("등록완료");
+                    window.location.reload();
+                    // loadBook();
+                })
+            })
+
+            loadBook();
+        })
+    </script>
+</head>
+
+<body>
+    <table border="1">
+        <tr>
+            <th>도서번호</th>
+            <th>도서명</th>
+            <th>가격</th>
+            <th>출판사</th>
+        </tr>
+        <tbody id="listBook">
+
+        </tbody>
+    </table>
+
+    <hr>
+    <form method="post">
+        도서번호 : <input type="number" name="bookid" id="bookid" readonly=""><br>
+        도서이름 : <input type="text" name="bookname" id="bookname"><br>
+        도서가격 : <input type="number" name="price" id="price"><br>
+        출판사명 : <input type="text" name="publisher" id="publisher"><br><br>
+    </form>
+    <button id="btnInsert">등록</button>
+    <button id="btnUpdate">수정</button>
+    <button id="btnDelete">삭제</button>
+</body>
+
+</html>
